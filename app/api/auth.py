@@ -3,6 +3,7 @@ from sqlalchemy.orm import Session
 from app.schemas.user import UserRegisterRequest, UserLoginRequest,UserResponse
 from app.db.database import get_db
 from app.db.models import User
+from app.core.security import get_password_hash , verify_password
 
 router = APIRouter()
 
@@ -18,7 +19,7 @@ def register(data:UserRegisterRequest, db:Session = Depends(get_db)):
     user = User(
         username = data.username,
         email = data.email,
-        password = data.password,
+        password = get_password_hash(data.password),
     )
     db.add(user)
     db.commit()
@@ -33,7 +34,7 @@ def login(data: UserLoginRequest, db: Session = Depends(get_db)):
     if not user:
         raise HTTPException(status_code=400, detail="Invalid email or password")
 
-    if user.password != data.password:
+    if not verify_password(data.password,user.password):
         raise HTTPException(status_code=400,detail="Invalid email or password")
 
     return {
