@@ -1,6 +1,7 @@
 from passlib.context import CryptContext
 from datetime import datetime , timedelta , timezone
 from jose import jwt
+from jose import JWSError
 pwd_context = CryptContext(schemes=["bcrypt"],deprecated="auto")
 
 SECRET_KEY = "change-this-secret-key"
@@ -22,3 +23,12 @@ def create_access_token(data: dict) -> str:
     encoded_jwt = jwt.encode(to_encode,SECRET_KEY,algorithm=ALGORITHM)
 
     return encoded_jwt
+
+def decode_access_token(token:str) -> dir | None:
+    try:
+        payload = jwt.decode(token,SECRET_KEY,algorithms=[ALGORITHM])
+        return payload
+    except JWSError:
+        return None
+        # encode 时：algorithm=ALGORITHM
+        # decode 时：algorithms=[ALGORITHM]
