@@ -8,5 +8,6 @@ dependencies = [
     "bcrypt<5",
     "fastapi[standard]>=0.141.1",
     "passlib[bcrypt]>=1.7.4",
+    "python-jose[cryptography]>=3.5.0",
     "sqlalchemy>=2.0.52",
 ]

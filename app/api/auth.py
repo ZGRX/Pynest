@@ -1,9 +1,9 @@
 from fastapi import APIRouter, HTTPException,Depends
 from sqlalchemy.orm import Session
-from app.schemas.user import UserRegisterRequest, UserLoginRequest,UserResponse
+from app.schemas.user import UserRegisterRequest, UserLoginRequest,UserResponse,TokenResponse
 from app.db.database import get_db
 from app.db.models import User
-from app.core.security import get_password_hash , verify_password
+from app.core.security import get_password_hash , verify_password,create_access_token
 
 router = APIRouter()
 
@@ -27,7 +27,7 @@ def register(data:UserRegisterRequest, db:Session = Depends(get_db)):
 
     return user
 
-@router.post("/login")
+@router.post("/login",response_model=TokenResponse)
 def login(data: UserLoginRequest, db: Session = Depends(get_db)):
     user = db.query(User).filter(User.email == data.email).first()
 
@@ -37,11 +37,9 @@ def login(data: UserLoginRequest, db: Session = Depends(get_db)):
     if not verify_password(data.password,user.password):
         raise HTTPException(status_code=400,detail="Invalid email or password")
 
+    access_token = create_access_token(data={"sub":user.email})
+    #sub 是 JWT 常用字段，意思是：subject，这个 token 属于谁
     return {
-        "message": "login success",
-        "user":{
-            "id": user.id,
-            "username": user.username,
-            "email": user.email,
-        }
+        "access_token": access_token,
+        "token_type": "bearer",
     }
