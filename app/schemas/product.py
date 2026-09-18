@@ -15,3 +15,11 @@ class ProductResponse(BaseModel):
     stock: int
     is_active: bool
     created_at: datetime
+
+class ProductUpdate(BaseModel):
+    name: str | None = None
+    description: str | None = None
+    price: float | None = None
+    stock: int | None = None
+    is_active: bool |None = None
+    created_at: datetime | None = None

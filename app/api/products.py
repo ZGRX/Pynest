@@ -3,7 +3,7 @@ from sqlalchemy.orm import Session
 
 from app.db.database import get_db
 from app.db.models import Product
-from app.schemas.product import ProductCreate, ProductResponse
+from app.schemas.product import ProductCreate, ProductResponse,ProductUpdate
 from app.api.auth import get_current_user
 
 router = APIRouter()
@@ -25,3 +25,38 @@ def create_product(
     db.refresh(product)
 
     return product
+
+@router.get("/",response_model=list[ProductResponse])
+def list_products(db:Session = Depends(get_db)):
+    products = db.query(Product).all()
+    return products
+
+@router.get("/{product_id}",response_model = ProductResponse)
+def get_products(product_id:int,db:Session = Depends(get_db)):
+    product = db.query(Product).filter(Product.id == product_id).first()
+
+    if product is None:
+        raise HTTPException(status_code=404,detail="Product not found")
+    return product
+
+@router.put("/{product_id}",response_model=ProductResponse)
+def update_product(
+    product_id: int ,
+    data: ProductUpdate,
+    db:Session = Depends(get_db),
+    current_user = Depends(get_current_user),
+):
+    product = db.query(Product).filter(Product.id == product_id).first()
+
+    if product is None:
+        raise HTTPException(status_code=404,detail="Product not found")
+    update_data = data.model_dump(exclude_unset=True)
+
+    for key, value in update_data.items():
+        setattr(product, key, value)#setattr() 是 Python 内置函数，用来动态设置对象属性。
+
+    db.commit()
+    db.refresh(product)
+
+    return product
+    
