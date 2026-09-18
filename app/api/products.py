@@ -59,4 +59,19 @@ def update_product(
     db.refresh(product)
 
     return product
-    
+
+@router.delete("/{product.id}",response_model=ProductResponse)
+def delete_product(
+    product_id:int ,
+    db:Session = Depends(get_db),
+    current_user = Depends(get_current_user),
+):
+    product = db.query(Product).filter(Product.id == product_id).first()
+    if product is None:
+        raise HTTPException(status_code=404,detail="Product not found")
+
+    product.is_active = False
+    db.commit()
+    db.refresh(product)
+
+    return product
