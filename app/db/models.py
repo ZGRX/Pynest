@@ -16,9 +16,20 @@ class Product(Base):
     __tablename__ = "products"
 
     id = Column(Integer,primary_key=True,index=True)
-    name = Column(String,primary_key=True,nullable=False)
+    name = Column(String,nullable=False)
     description = Column(String,nullable=True)
     price = Column(Integer,nullable=False)
     stock = Column(Integer,nullable=False,default=0)
     is_active = Column(Boolean,nullable=False,default=True)
     created_at = Column(DateTime,default=lambda: datetime.now(timezone.utc))
+
+class Order(Base):
+    __tablename__ = "orders"
+
+    id = Column(Integer, primary_key=True, index=True)
+    user_id = Column(Integer, nullable=False)
+    product_id = Column(Integer, nullable=False)
+    quantity = Column(Integer, nullable=False)
+    total_price = Column(Float, nullable=False)
+    status = Column(String, nullable=False, default="pending")
+    created_at = Column(DateTime, default=lambda: datetime.now(timezone.utc))
