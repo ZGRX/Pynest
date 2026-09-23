@@ -36,3 +36,35 @@ def create_order(
 
     return order
 
+@router.get("/",response_model=list[OrderResponse])
+def list_my_orders(
+    db:Session = Depends(get_db),
+    current_user = Depends(get_current_user),
+):
+    orders = db.query(Order).filter(Order.user_id == current_user.id).all()
+    return orders
+
+@router.get("/{order_id}", response_model=OrderResponse)#花括号里的：{order_id}，表示这是一个路径参数。
+def get_order(
+    order_id: int,
+    db:Session = Depends(get_db),
+    current_user = Depends(get_current_user),
+):
+    order = db.query(Order).filter(Order.id == order_id).first()
+    if order is None:
+        raise HTTPException(status_code=404,detail="Order not found")
+
+    if order.user_id != current_user.id:
+        raise HTTPException(status_code=403, detail="Not allowed to access this order")
+
+    return order
+
+@router.get("/{order_id}",response_model=OrderResponse)
+def cancel_order(
+    order_id:int,
+    db:Session = Depends(get_db),
+    current_user = Depends(get_current_user),
+): 
+    order = db.query(Order).filter(Order.id == order_id).first
+    if order.user_id == current_user.id:
+        
