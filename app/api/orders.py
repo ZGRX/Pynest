@@ -4,6 +4,7 @@ from app.db.models import Product,Order
 from app.schemas.order import OrderCreate,OrderResponse
 from app.api.auth import get_current_user
 from sqlalchemy.orm import Session
+from app.core.constants import ORDER_STATUS_CANCELLED,ORDER_STATUS_PENDING,ORDER_STATUS_PAID
 
 router = APIRouter()
 @router.post("/",response_model=OrderResponse)
@@ -73,7 +74,7 @@ def cancel_order(
     if order.user_id != current_user.id:
         raise HTTPException(status_code=403, detail="Not allowed to cancel this order")
 
-    if order.status != "pending":
+    if order.status != ORDER_STATUS_PENDING:
         raise HTTPException(status_code=400, detail="Only pending orders can be cancelled")
 
     product = db.query(Product).filter(Product.id == order.product_id).first()
@@ -82,13 +83,36 @@ def cancel_order(
         raise HTTPException(status_code=404, detail="Product not found")
 
     product.stock += order.quantity
-    order.status = "cancelled"
+    order.status = ORDER_STATUS_CANCELLED
 
     db.commit()
     db.refresh(order)
 
     return order
-        
+
+@router.post("/{order_id}/pay", response_model=OrderResponse)
+def pay_order(
+    order_id: int,
+    db: Session = Depends(get_db),
+    current_user = Depends(get_current_user),
+):
+    order = db.query(Order).filter(Order.id == order_id).first()
+
+    if order is None:
+        raise HTTPException(status_code=404, detail="Order not found")
+
+    if order.user_id != current_user.id:
+        raise HTTPException(status_code=403, detail="Not allowed to pay this order")
+
+    if order.status != ORDER_STATUS_PENDING:
+        raise HTTPException(status_code=400, detail="Only pending orders can be paid")
+
+    order.status = ORDER_STATUS_PAID
+
+    db.commit()
+    db.refresh(order)
+
+    return order        
 #pending     待支付 / 待处理
 #paid        已支付
 #shipped     已发货

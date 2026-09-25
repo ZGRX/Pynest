@@ -1,0 +1,3 @@
+ORDER_STATUS_PENDING = "pending"
+ORDER_STATUS_CANCELLED = "cancelled"
+ORDER_STATUS_PAID = "paid"
