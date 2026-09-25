@@ -10,6 +10,7 @@ class User(Base):
     username = Column(String, nullable=False)
     email = Column(String, unique=True, index=True, nullable=False)
     password = Column(String, nullable=False)
+    is_admin = Column(Boolean,nullable=False,default=False)
     #index=True 是 给这一列加索引
 
 class Product(Base):

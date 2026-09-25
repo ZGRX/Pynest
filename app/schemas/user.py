@@ -14,6 +14,7 @@ class UserResponse(BaseModel):
     id: int
     username: str
     email: str
+    is_admin:bool
 
 class TokenResponse(BaseModel):
     access_token:str

@@ -4,7 +4,7 @@ from sqlalchemy.orm import Session
 from app.db.database import get_db
 from app.db.models import Product
 from app.schemas.product import ProductCreate, ProductResponse,ProductUpdate
-from app.api.auth import get_current_user
+from app.api.auth import get_current_user,get_current_admin_user
 
 router = APIRouter()
 
@@ -12,7 +12,7 @@ router = APIRouter()
 def create_product(
     data:ProductCreate,
     db:Session = Depends(get_db),
-    current_user = Depends(get_current_user)
+    current_user = Depends(get_current_admin_user)
 ):
     product = Product(
         name = data.name,
@@ -44,7 +44,7 @@ def update_product(
     product_id: int ,
     data: ProductUpdate,
     db:Session = Depends(get_db),
-    current_user = Depends(get_current_user),
+    current_user = Depends(get_current_admin_user),
 ):
     product = db.query(Product).filter(Product.id == product_id).first()
 
@@ -60,11 +60,11 @@ def update_product(
 
     return product
 
-@router.delete("/{product.id}",response_model=ProductResponse)
+@router.delete("/{product_id}",response_model=ProductResponse)
 def delete_product(
     product_id:int ,
     db:Session = Depends(get_db),
-    current_user = Depends(get_current_user),
+    current_user = Depends(get_current_admin_user),
 ):
     product = db.query(Product).filter(Product.id == product_id).first()
     if product is None:

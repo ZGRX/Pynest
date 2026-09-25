@@ -2,7 +2,7 @@ from fastapi import APIRouter, HTTPException,Depends
 from app.db.database import get_db
 from app.db.models import Product,Order
 from app.schemas.order import OrderCreate,OrderResponse
-from app.api.auth import get_current_user
+from app.api.auth import get_current_user,get_current_admin_user
 from sqlalchemy.orm import Session
 from app.core.constants import ORDER_STATUS_CANCELLED,ORDER_STATUS_PENDING,ORDER_STATUS_PAID
 
@@ -37,6 +37,14 @@ def create_order(
 
     return order
 
+@router.get("/admin/all",response_model=list[OrderResponse])
+def list_all_orders(
+    db:Session = Depends(get_db),
+    current_user = Depends(get_current_admin_user),
+):
+    orders = db.query(Order).all()
+    return orders
+
 @router.get("/",response_model=list[OrderResponse])
 def list_my_orders(
     db:Session = Depends(get_db),
@@ -44,6 +52,18 @@ def list_my_orders(
 ):
     orders = db.query(Order).filter(Order.user_id == current_user.id).all()
     return orders
+
+@router.get("/admin/{order_id}", response_model=OrderResponse)#花括号里的：{order_id}，表示这是一个路径参数。
+def admin_get_order(
+    order_id: int,
+    db:Session = Depends(get_db),
+    current_user = Depends(get_current_admin_user),
+):
+    order = db.query(Order).filter(Order.id == order_id).first()
+    if order is None:
+        raise HTTPException(status_code=404,detail="Order not found")
+
+    return order
 
 @router.get("/{order_id}", response_model=OrderResponse)#花括号里的：{order_id}，表示这是一个路径参数。
 def get_order(

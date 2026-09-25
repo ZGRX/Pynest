@@ -7,7 +7,7 @@ from app.core.security import get_password_hash , verify_password,create_access_
 from fastapi.security import OAuth2PasswordBearer
 router = APIRouter()
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/api/auth/login")###？？？
-
+users = []
 def get_current_user(
         token: str = Depends(oauth2_scheme),
         db:Session = Depends(get_db),
@@ -23,8 +23,13 @@ def get_current_user(
     if user is None:
         raise HTTPException(status_code=401, detail="User not found")
     return user
+def get_current_admin_user(
+        current_user: User = Depends(get_current_user),
+):
+    if not current_user.is_admin:
+        raise HTTPException(status_code=403,detail="Admin permission required")
+    return current_user
 
-users = []
 
 @router.post("/register",response_model = UserResponse)
 def register(data:UserRegisterRequest, db:Session = Depends(get_db)):
@@ -64,3 +69,4 @@ def login(data: UserLoginRequest, db: Session = Depends(get_db)):
 @router.get("/me",response_model=UserResponse)
 def get_me(current_user: User = Depends(get_current_user)):
     return current_user
+
