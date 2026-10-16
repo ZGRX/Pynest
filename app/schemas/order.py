@@ -1,9 +1,9 @@
 from datetime import datetime
-from pydantic import BaseModel
+from pydantic import BaseModel, Field
 #用户需要传什么。
 class OrderCreate(BaseModel):
     product_id:int 
-    quantity:int
+    quantity: int = Field(gt=0)
 
 class OrderResponse(BaseModel):
     id:int 

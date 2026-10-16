@@ -51,7 +51,13 @@ def update_product(
     if product is None:
         raise HTTPException(status_code=404,detail="Product not found")
     update_data = data.model_dump(exclude_unset=True)
-
+    #这四个字段只要出现在更新数据里，就不能是 None
+    for field in ("name", "price", "stock", "is_active"):
+        if field in update_data and update_data[field] is None:
+            raise HTTPException(
+                status_code=422,
+                detail=f"{field} cannot be null",
+            )
     for key, value in update_data.items():
         setattr(product, key, value)#setattr() 是 Python 内置函数，用来动态设置对象属性。
 
