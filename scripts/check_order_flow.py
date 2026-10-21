@@ -1,6 +1,48 @@
 from fastapi.testclient import TestClient
 from app.main import app
-
+from getpass import getpass
 with TestClient(app) as client:
     response = client.get("/api/products/")
     print(response.status_code, response.json())
+
+    email = input("邮箱：")
+    password = getpass("密码：")
+    login_response = client.post(
+    "/api/auth/login",
+    json={"email": email, "password": password},
+    )
+    print("登录状态码：", login_response.status_code)  
+
+    if login_response.status_code == 200:
+        token = login_response.json()["access_token"]
+        print("登录成功，已取得 token")
+
+        product_response = client.post(
+            "/api/products/",
+            json={"name": "测试商品", "description": "订单练习", "price": 30, "stock": 5},
+            headers={"Authorization": f"Bearer {token}"},
+        )#表示这是一个 格式化字符串（f-string）：字符串里的 {变量名} 会被替换成变量的值。
+        print("创建商品：", product_response.status_code, product_response.json())
+
+        product_id = product_response.json()["id"]
+        order_response = client.post(
+            "/api/orders/",
+            json={"product_id": product_id, "quantity": 2},
+            headers={"Authorization": f"Bearer {token}"},
+        )
+        print("创建订单：", order_response.status_code, order_response.json())      
+
+        product_after = client.get(f"/api/products/{product_id}")
+        print("下单后库存：", product_after.json()["stock"])
+        assert product_after.json()["stock"] == 3
+
+        order_id = order_response.json()["id"]
+        cancel_response = client.post(
+            f"/api/orders/{order_id}/cancel",
+            headers={"Authorization": f"Bearer {token}"},
+        )
+
+
+
+    else:
+        print("登录失败：", login_response.json())
