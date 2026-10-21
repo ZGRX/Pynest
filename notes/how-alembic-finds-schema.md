@@ -39,9 +39,9 @@ uv run alembic revision --autogenerate -m "initial schema"
 uv run alembic upgrade head
 ```
 
-第一条命令中的 `--autogenerate` 让 Alembic 比较模型和数据库，并**生成迁移文件**。目前 PostgreSQL 中还没有这些业务表，因此生成的第一份文件包含 `users`、`products`、`orders` 三次 `op.create_table(...)`。生成后先阅读文件，确认操作符合预期。
+第一条命令中的 `--autogenerate` 让 Alembic 比较模型和数据库，并**生成迁移文件**。生成第一份文件时，PostgreSQL 中还没有这些业务表，因此文件包含 `users`、`products`、`orders` 三次 `op.create_table(...)`。生成后先阅读文件，确认操作符合预期。
 
-第二条命令的 `upgrade head` 会**执行已经生成的迁移文件**。`head` 指最新迁移版本。文件中的 `upgrade()` 写正向操作；`downgrade()` 写反向操作。我们目前已生成并检查初始迁移，下一步才是执行它。
+第二条命令的 `upgrade head` 会**执行已经生成的迁移文件**。`head` 指最新迁移版本。文件中的 `upgrade()` 写正向操作；`downgrade()` 写反向操作。初始迁移 `e4164fd3b292` 已执行，`alembic current` 显示它是当前 `head`。
 
 ## `create_all()` 为什么被移走？
 
@@ -52,7 +52,7 @@ uv run alembic upgrade head
 ## 当前边界
 
 - 原来的 SQLite 文件还在，但 PyNest 当前连接 PostgreSQL 18（本机端口 `5434`）。
-- PostgreSQL 服务和空的 `pynest` 数据库由 Docker 容器启动时准备；业务表由下一步的 Alembic 迁移创建。
+- PostgreSQL 服务和最初空的 `pynest` 数据库由 Docker 容器启动时准备；业务表已由 Alembic 初始迁移创建。
 - 这一步是建立 PostgreSQL 的表结构，**没有把 SQLite 的旧数据搬过去**。
 
 延伸阅读：[上一份 PostgreSQL 学习记录](postgresql-alembic-learning.md)、[Alembic 自动生成迁移文档](https://alembic.sqlalchemy.org/en/latest/autogenerate.html)。

@@ -58,7 +58,7 @@ uv run alembic init alembic
 
 第一条命令安装 Alembic，并把它加入 `pyproject.toml`。第二条命令运行 Alembic 的初始化操作，生成了 `alembic.ini` 和 `alembic/` 目录；它**没有修改 PostgreSQL 中的表**。
 
-Alembic 已经通过 `alembic/env.py` 中的 `target_metadata = Base.metadata` 读到 PyNest 的模型，并使用项目的数据库地址覆盖 `alembic.ini` 中的占位内容。`app/main.py` 已移除自动调用 `create_all()` 的建表代码。第一份迁移文件已经生成并检查，下一步是执行 `uv run alembic upgrade head`。这个过程另见[《Alembic 是怎么知道要建哪些表的？》](how-alembic-finds-schema.md)。
+Alembic 已经通过 `alembic/env.py` 中的 `target_metadata = Base.metadata` 读到 PyNest 的模型，并使用项目的数据库地址覆盖 `alembic.ini` 中的占位内容。`app/main.py` 已移除自动调用 `create_all()` 的建表代码。第一份迁移 `e4164fd3b292` 已执行，PostgreSQL 中已验证 `users`、`products`、`orders` 和 `alembic_version` 四张表。这个过程另见[《Alembic 是怎么知道要建哪些表的？》](how-alembic-finds-schema.md)。
 
 ## 我现在能说清楚的流程
 
@@ -68,7 +68,7 @@ Docker 镜像 → 运行 PostgreSQL 容器 → 安装 psycopg → SQLAlchemy 连
                               配置 Alembic → 生成迁移 → 应用迁移
 ```
 
-目前已经完成数据库连接、Alembic 配置和迁移文件生成；迁移文件尚未执行。
+目前已完成数据库连接、Alembic 配置、迁移生成与执行；下一步验证现有 API 在 PostgreSQL 上的读写。
 
 ## 参考资料
 

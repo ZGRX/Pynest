@@ -1,7 +1,7 @@
 
 # PyNest
 
-PyNest is a FastAPI business backend practice project inspired by PyBoard.
+PyNest is a FastAPI practice project for a product and order management backend.
 
 Project target and learning roadmap: [PROJECT_GOAL.md](PROJECT_GOAL.md).
 
