@@ -35,9 +35,9 @@ with TestClient(app) as client:
         product_after = client.get(f"/api/products/{product_id}")
         print("下单后库存：", product_after.json()["stock"])
         assert product_after.json()["stock"] == 3
+        order_id = order_response.json()["id"]
 
         #取消刚刚创立的订单
-        order_id = order_response.json()["id"]
         cancel_response = client.post(
             f"/api/orders/{order_id}/cancel",
             headers={"Authorization": f"Bearer {token}"},
@@ -59,8 +59,27 @@ with TestClient(app) as client:
         product_after_second_cancel = client.get(f"/api/products/{product_id}")
         assert product_after_second_cancel.json()["stock"] == 5
         print("重复取消检查通过")        
+        #测试取消订单的支付
+        pay_after_cancel_response = client.post(
+            f"/api/orders/{order_id}/pay",
+            headers={"Authorization": f"Bearer {token}"},
+        )
+        assert pay_after_cancel_response.status_code == 400
 
-
+        #测试新订单的支付
+        product_id = product_response.json()["id"]
+        order_response = client.post(
+            "/api/orders/",
+            json={"product_id": product_id, "quantity": 2},
+            headers={"Authorization": f"Bearer {token}"},
+        )
+        new_order_id = order_response.json()["id"]
+        print("创建订单：", order_response.status_code, order_response.json())              
+        pay_response = client.post(
+            f"/api/orders/{order_id}/pay",
+            headers={"Authorization": f"Bearer {token}"},
+        )
+        assert pay_response.json()["status"]== "paid"
 
     else:
         print("登录失败：", login_response.json())
