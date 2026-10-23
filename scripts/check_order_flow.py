@@ -35,6 +35,7 @@ with TestClient(app) as client:
         product_after = client.get(f"/api/products/{product_id}")
         print("下单后库存：", product_after.json()["stock"])
         assert product_after.json()["stock"] == 3
+
         #取消刚刚创立的订单
         order_id = order_response.json()["id"]
         cancel_response = client.post(
@@ -48,6 +49,18 @@ with TestClient(app) as client:
             f"/api/products/{product_id}",
         )
         assert product_stock.json()["stock"] == 5
+
+        #第二次取消刚刚的订单
+        second_cancel_response = client.post(
+           f"/api/orders/{order_id}/cancel",
+            headers={"Authorization": f"Bearer {token}"},            
+        )
+        assert second_cancel_response.status_code == 400
+        product_after_second_cancel = client.get(f"/api/products/{product_id}")
+        assert product_after_second_cancel.json()["stock"] == 5
+        print("重复取消检查通过")        
+
+
 
     else:
         print("登录失败：", login_response.json())
