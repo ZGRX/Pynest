@@ -76,10 +76,12 @@ with TestClient(app) as client:
         new_order_id = order_response.json()["id"]
         print("创建订单：", order_response.status_code, order_response.json())              
         pay_response = client.post(
-            f"/api/orders/{order_id}/pay",
+            f"/api/orders/{new_order_id}/pay",
             headers={"Authorization": f"Bearer {token}"},
         )
         assert pay_response.json()["status"]== "paid"
+        product_after_pay = client.get(f"/api/products/{product_id}")
+        assert product_after_pay.json()["stock"] == 3
 
     else:
         print("登录失败：", login_response.json())
